@@ -1,20 +1,24 @@
 module Main where
 
+import qualified Data.List as L (delete)
+import Data.List hiding (delete)
 import Data.RBTree.LL
 import Test.Framework (defaultMain, testGroup, Test)
 import Test.Framework.Providers.QuickCheck2
-import Data.List hiding (delete)
-import qualified Data.List as L (delete)
 
 tests :: [Test]
 tests = [ testGroup "Property Test" [
                testProperty "fromList"           prop_fromList
              , testProperty "toList"             prop_toList
              , testProperty "member"             prop_member
---             , testProperty "delete"             prop_delete
---             , testProperty "delete2"            prop_delete2
+               {-
+             , testProperty "delete"             prop_delete
+             , testProperty "delete2"            prop_delete2
+-}
              , testProperty "deleteMin"          prop_deleteMin
              , testProperty "deleteMin2"         prop_deleteMin2
+             , testProperty "deleteMax"          prop_deleteMax
+             , testProperty "deleteMax2"         prop_deleteMax2
              ]
         ]
 
@@ -46,7 +50,7 @@ prop_delete2 :: [Int] -> Bool
 prop_delete2 [] = True
 prop_delete2 (x:xs) = ys == zs
   where
-    t = fromList xs
+    t = fromList (x:xs)
     t' = delete x t
     ys = toList t'
     zs = L.delete x . nub . sort $ xs
@@ -67,6 +71,22 @@ prop_deleteMin2 xs = ys == zs
     t' = deleteMin t
     ys = toList t'
     zs = tail . nub . sort $ xs
+
+prop_deleteMax :: [Int] -> Bool
+prop_deleteMax [] = True
+prop_deleteMax xs = valid t'
+  where
+    t = fromList xs
+    t' = deleteMax t
+
+prop_deleteMax2 :: [Int] -> Bool
+prop_deleteMax2 [] = True
+prop_deleteMax2 xs = ys == zs
+  where
+    t = fromList xs
+    t' = deleteMax t
+    ys = reverse . toList $ t'
+    zs = tail . nub . sortBy (flip compare) $ xs
 
 main :: IO ()
 main = defaultMain tests
