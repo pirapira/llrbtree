@@ -164,6 +164,12 @@ Section RB.
     congruence.
   Defined.
 
+  Definition turnB t :=
+    match t with
+      | Leaf           => (* not reached *) t
+      | (Fork _ l x r) => Fork B l x r
+    end.
+
   Definition deleteMin t :=
     match deleteMin' (turnR t) with
       | Leaf => Leaf
@@ -276,6 +282,3 @@ Section RB.
 
       Qed.
 End RB.
-
-
-
