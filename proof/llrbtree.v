@@ -196,82 +196,177 @@ Section RB.
       | _ => inr tt
     end.
 
+  Fixpoint size t :=
+    match t with
+      | Leaf => O
+      | Node _ l _ r =>
+        size l + size r + 1
+    end.
+
+  Require Import Omega.
+
   Program Fixpoint
-    delete' kx t {measure t} :=
+    delete' kx t {measure (size t)} :=
     match t with
       | (Node c l x r) => 
         match compare kx x with
-          | LT => deleteLT kx c l x r
-          | GT => deleteGT kx c l x r
-          | EQ => deleteEQ kx c l x r
-        end
-      | Leaf => t (* not reached *)
-    end
-  with
-    deleteLT kx c l x r :=
-    match (kx, c, l, x, r, isBlackLeftBlack l, isBlackLeftRed r) with
-      | (_, R, _, _, _, true, true) =>
-        match r with
-          | Node B (Node R rll rlx rlr) rx rr => 
-            Node R (Node B (delete' kx (turnR l)) x rll) rlx (Node B rlr rx rr)
-          | _ => l (* not reached *)
-        end
-      | (_, R, _, _, _, true, _) => balanceR B (delete' kx (turnR l)) x (turnR r)
-      | _ => Node c (delete' kx l) x r
-    end
-  with
-    deleteGT kx c l x r :=
-    match (kx, c, l, x, r, isBlackLeftBlack r, isBlackLeftRed l) with
-      | (kx, c, (Node R ll lx lr), x, r, _, _) =>
-        balanceR c ll lx (delete' kx (Node R lr x r))
-      | (kx, R, l, x, r, true, true) =>
-        match l with
-          | Node B ll lx lr => 
-            Node R (turnB ll) lx (balanceR B lr x (delete' kx (turnR r)))
-          | _ => l (* never reached *)
-        end
-      | (kx, R, l, x, r, true, _) =>
-        balanceR B (turnR l) x (delete' kx (turnR r))
-      | (kx, R, l, x, r, _, _) =>
-        Node R l x (delete' kx r)
-      | _ => l (* not reached *)
-    end
-  with
-    deleteEQ kx c l x r :=
-    match (kx, c, l, x, r, isBlackLeftBlack r, isBlackLeftRed l) with
-      | (_, R, Leaf, _, Leaf, _, _) => Leaf
-      | (kx, c, (Node R ll lx lr), x, r, _, _) =>
-        balanceR c ll lx (delete' kx (Node R lr x r))
-      | (_, R, l, _, r, true, true) =>
-        match minimum r with
-          | inl m =>
-            match l with             
-              | Node B ll lx lr =>
-                balanceR R (turnB ll) lx (balanceR B lr m (deleteMin' (turnR r)))
-              | _ => (* never reached *) l
+          | LT => 
+            match (kx, c, l, x, r, isBlackLeftBlack l, isBlackLeftRed r) with
+              | (_, R, _, _, _, true, true) =>
+                match r with
+                  | Node B (Node R rll rlx rlr) rx rr => 
+                    Node R (Node B (delete' kx (turnR l)) x rll) rlx (Node B rlr rx rr)
+                  | _ => l (* not reached *)
+                end
+              | (_, R, _, _, _, true, _) => balanceR B (delete' kx (turnR l)) x (turnR r)
+              | _ => Node c (delete' kx l) x r
             end
-          | inr tt => (* never reached *) l
+          | GT =>     match (kx, c, l, x, r, isBlackLeftBlack r, isBlackLeftRed l) with
+                        | (kx, c, (Node R ll lx lr), x, r, _, _) =>
+                          balanceR c ll lx (delete' kx (Node R lr x r))
+                        | (kx, R, l, x, r, true, true) =>
+                          match l with
+                            | Node B ll lx lr => 
+                              Node R (turnB ll) lx (balanceR B lr x (delete' kx (turnR r)))
+                            | _ => l (* never reached *)
+                          end
+                        | (kx, R, l, x, r, true, _) =>
+                          balanceR B (turnR l) x (delete' kx (turnR r))
+                        | (kx, R, l, x, r, _, _) =>
+                          Node R l x (delete' kx r)
+                        | _ => l (* not reached *)
+                      end
+          | EQ =>     match (kx, c, l, x, r, isBlackLeftBlack r, isBlackLeftRed l) with
+                        | (_, R, Leaf, _, Leaf, _, _) => Leaf
+                        | (kx, c, (Node R ll lx lr), x, r, _, _) =>
+                          balanceR c ll lx (delete' kx (Node R lr x r))
+                        | (_, R, l, _, r, true, true) =>
+                          match minimum r with
+                            | inl m =>
+                              match l with             
+                                | Node B ll lx lr =>
+                                  balanceR R (turnB ll) lx (balanceR B lr m (deleteMin' (turnR r)))
+                                | _ => (* never reached *) l
+                              end
+                            | inr tt => (* never reached *) l
+                          end
+                        | (_, R, l, _, r, true, _) =>
+                          match minimum r with
+                            | inl m => 
+                              balanceR B (turnR l) m (deleteMin' (turnR r))
+                            | _ => (* never reached *) l
+                          end
+                        | (_, R, l, _, (Node B rl rx rr), _, _) =>
+                          match minimum r with
+                            | inl m => 
+                              Node R l m (Node B (deleteMin' rl) rx rr)
+                            | _ => (* never reached *) l
+                          end
+                        | _ => l (* not reached *)
+                      end
         end
-      | (_, R, l, _, r, true, _) =>
-        match minimum r with
-          | inl m => 
-            balanceR B (turnR l) m (deleteMin' (turnR r))
-          | _ => (* never reached *) l
-        end
-      | (_, R, l, _, (Node B rl rx rr), _, _) =>
-        match minimum r with
-          | inl m => 
-            Node R l m (Node B (deleteMin' rl) rx rr)
-          | _ => (* never reached *) l
-        end
-      | _ => l (* not reached *)
+      | Leaf => (* not reached *) t
     end.
-        
-
-
-
-
-
+  Next Obligation.
+    destruct l; simpl; try omega.
+  Defined.
+  Next Obligation.
+    destruct l; simpl; omega.
+  Defined.
+  Next Obligation.
+    simpl.
+    omega.
+  Defined.
+  Next Obligation.
+    split; congruence.
+  Defined.
+  Next Obligation.
+    split; congruence.
+  Defined.
+  Next Obligation.
+    simpl; omega.
+  Defined.
+  Next Obligation.
+    destruct r; simpl; omega.
+  Defined.
+  Next Obligation.
+    destruct r; simpl; omega.
+  Defined.
+  Next Obligation.
+    destruct r; simpl; omega.
+  Defined.
+  Next Obligation.
+    split; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    simpl; omega.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
+  Next Obligation.
+    intuition; congruence.
+  Defined.
   
   Definition delete kx t :=
     match delete' kx (turnR t) with
