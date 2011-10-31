@@ -18,18 +18,18 @@ Require Import llrbtree.
       | [|- context[insert _ _] ] => unfold insert 
       | [H: exists n, _ |- _] => destruct H
       | [|- exists m: nat, hasSameBlackDepth m Leaf] => exists O
-      | [|- exists n : nat, hasSameBlackDepth n (Fork R Leaf _ _)] => exists O
-      | [|- exists n : nat, hasSameBlackDepth n (Fork B Leaf _ _)] => exists (S O)
-      | [|- exists n : nat, hasSameBlackDepth n (Fork R _ _ Leaf)] => exists O
-      | [|- exists n : nat, hasSameBlackDepth n (Fork B _ _ Leaf)] => exists (S O)
-      | [|- exists n : nat, hasSameBlackDepth n (Fork B (Fork R Leaf _ _) _ _)] =>
+      | [|- exists n : nat, hasSameBlackDepth n (Node R Leaf _ _)] => exists O
+      | [|- exists n : nat, hasSameBlackDepth n (Node B Leaf _ _)] => exists (S O)
+      | [|- exists n : nat, hasSameBlackDepth n (Node R _ _ Leaf)] => exists O
+      | [|- exists n : nat, hasSameBlackDepth n (Node B _ _ Leaf)] => exists (S O)
+      | [|- exists n : nat, hasSameBlackDepth n (Node B (Node R Leaf _ _) _ _)] =>
         exists (S O)
-      | [|- exists n : nat, hasSameBlackDepth n (Fork B (Fork R _ _ Leaf) _ _)] =>
+      | [|- exists n : nat, hasSameBlackDepth n (Node B (Node R _ _ Leaf) _ _)] =>
         exists (S O)
       | [|- exists n : nat, hasSameBlackDepth n
-        (Fork R (Fork B (Fork R Leaf _ _) _ _) _ _)] => exists (S O)
+        (Node R (Node B (Node R Leaf _ _) _ _) _ _)] => exists (S O)
       | [|- exists n : nat, hasSameBlackDepth n
-        (Fork R (Fork B (Fork R _ _ Leaf) _ _) _ _)] => exists (S O)
+        (Node R (Node B (Node R _ _ Leaf) _ _) _ _)] => exists (S O)
       | [|- context[reds _ Leaf]] => simpl
       | [H: _ /\ _ |- _] => destruct H
       | [H: hasSameBlackDepth ?x0 ?t1 |- exists n, hasSameBlackDepth n ?t1]
@@ -44,63 +44,63 @@ Require Import llrbtree.
               | [H1: m = n |- _] => idtac
             end |
             (assert (m = n) by (apply hasSameFunctional with t; auto); subst)])
-      | [H :ins ?x ?t = Fork _ _ _ _ |- _] => rewrite H in *
+      | [H :ins ?x ?t = Node _ _ _ _ |- _] => rewrite H in *
       |  [ H: hasSameBlackDepth ?x ?t1 |-
-          exists n : nat, hasSameBlackDepth n (Fork R (Fork R ?t1 _ _) _ _)]
+          exists n : nat, hasSameBlackDepth n (Node R (Node R ?t1 _ _) _ _)]
         =>
         exists x
-      | [ |- exists n : nat, hasSameBlackDepth n (Fork R (Fork R Leaf _ Leaf) _ Leaf)] =>
+      | [ |- exists n : nat, hasSameBlackDepth n (Node R (Node R Leaf _ Leaf) _ Leaf)] =>
         exists O
       | [ H31 : hasSameBlackDepth ?x ?r1 |- exists n : nat,
         hasSameBlackDepth n
-        (Fork B (Fork R (Fork B ?r1 _ _) _ _)_ _)] =>
+        (Node B (Node R (Node B ?r1 _ _) _ _)_ _)] =>
         exists (S (S x))
       | [ H31 : hasSameBlackDepth ?m1 ?r2 |-
         exists n : nat,
           hasSameBlackDepth n
-          (Fork B (Fork R _ _ (Fork B _ _ ?r2)) _ _)] =>
+          (Node B (Node R _ _ (Node B _ _ ?r2)) _ _)] =>
         exists (S (S m1))
       | [ H31 : hasSameBlackDepth ?x ?r1 |- exists n : nat,
         hasSameBlackDepth n
-        (Fork R (Fork B (Fork B ?r1 _ _) _ _)_ _)] =>
+        (Node R (Node B (Node B ?r1 _ _) _ _)_ _)] =>
         exists (S (S x))
       | [ H33 : hasSameBlackDepth ?x ?r1 |-
         exists n : nat,
           hasSameBlackDepth n
-          (Fork B (Fork B _ _ ?r1) _ _)] =>
+          (Node B (Node B _ _ ?r1) _ _)] =>
         exists (S (S x))
       | [ H31 : hasSameBlackDepth ?x ?r1 |- exists n : nat,
         hasSameBlackDepth n
-        (Fork B (Fork B (Fork R ?r1 _ _) _ _)_ _)] =>
+        (Node B (Node B (Node R ?r1 _ _) _ _)_ _)] =>
         exists (S (S x))
       | [ H31 : hasSameBlackDepth ?x ?r1 |- exists n : nat,
         hasSameBlackDepth n
-        (Fork B (Fork B (Fork B ?r1 _ _) _ _)_ _)] =>
+        (Node B (Node B (Node B ?r1 _ _) _ _)_ _)] =>
         exists (S (S (S x)))
-      | [H: hasSameBlackDepth _ (Fork _ _ _ _) |- _] =>
+      | [H: hasSameBlackDepth _ (Node _ _ _ _) |- _] =>
         inversion H; clear H; subst
-      | [H: reds _ (Fork _ _ _ _) = _ |- _] =>
+      | [H: reds _ (Node _ _ _ _) = _ |- _] =>
         inversion H; clear H; subst
-      | [H: (isLeftLean (Fork _ _ _ _)) = true |- _] =>
+      | [H: (isLeftLean (Node _ _ _ _)) = true |- _] =>
         inversion H; clear H; subst
       | [H14 : hasSameBlackDepth _ Leaf |- _] =>
         inversion H14; clear H14; subst
-      | [ H11 : Fork _ _ _ _ = Fork _ _ _ _ |- _] =>
+      | [ H11 : Node _ _ _ _ = Node _ _ _ _ |- _] =>
         inversion H11; clear H11; subst
       (* context_splitting *)
       | [|- andb _ _ = true] => apply andb_true_intro
       | [|- _ /\ _] => split
       | [c : Color |-_] => case_eq c; subst
-      | [H : hasSameBlackDepth ?x ?t |- exists n : nat, hasSameBlackDepth n (Fork B ?t _ _)] => exists (S x)
-      | [H : hasSameBlackDepth ?x ?t |- exists n : nat, hasSameBlackDepth n (Fork R ?t _ _)] => exists x
-      | [|- hasSameBlackDepth (S _) (Fork B _ _ _)] => apply SforkB
-      | [H := ?x : nat |- hasSameBlackDepth ?x (Fork B _ _ _)] => destruct x
-      | [|- hasSameBlackDepth _ (Fork R _ _ _)] => apply SforkR
+      | [H : hasSameBlackDepth ?x ?t |- exists n : nat, hasSameBlackDepth n (Node B ?t _ _)] => exists (S x)
+      | [H : hasSameBlackDepth ?x ?t |- exists n : nat, hasSameBlackDepth n (Node R ?t _ _)] => exists x
+      | [|- hasSameBlackDepth (S _) (Node B _ _ _)] => apply SforkB
+      | [H := ?x : nat |- hasSameBlackDepth ?x (Node B _ _ _)] => destruct x
+      | [|- hasSameBlackDepth _ (Node R _ _ _)] => apply SforkR
       | [H := ?x : nat |- hasSameBlackDepth ?x Leaf] => destruct x
       | [|- context[compare ?a ?b]] => destruct (compare a b)
       | [H: context[compare ?a ?b] |- _ ] => destruct (compare a b)
       | [|- context [isLeftLean Leaf]] => simpl
-      | [|- context [isLeftLean (Fork _ _ _)] ] => simpl
+      | [|- context [isLeftLean (Node _ _ _)] ] => simpl
       (* too heavy *)
       (* undecided *)
 (*       | [H14 : hasSameBlackDepth 0 _ |- _] =>

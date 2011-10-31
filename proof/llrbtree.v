@@ -12,7 +12,7 @@ Section RB.
   
   Inductive RBTree :=
   | Leaf
-  | Fork : Color -> RBTree -> a -> RBTree -> RBTree.
+  | Node : Color -> RBTree -> a -> RBTree -> RBTree.
 
   Definition empty := Leaf.
 
@@ -20,10 +20,10 @@ Section RB.
   | Oleaf : hasSameBlackDepth O Leaf
   | SforkB : forall (l r: RBTree) (m: nat) (x: a),
     hasSameBlackDepth m l -> hasSameBlackDepth m r ->
-    hasSameBlackDepth (S m) (Fork B l x r)
+    hasSameBlackDepth (S m) (Node B l x r)
   | SforkR : forall (l r: RBTree) (m: nat) (x: a),
     hasSameBlackDepth m l -> hasSameBlackDepth m r ->
-    hasSameBlackDepth m (Fork R l x r).
+    hasSameBlackDepth m (Node R l x r).
 
   Definition isBlackSame (t: RBTree): Prop :=
     exists n: nat, hasSameBlackDepth n t.
@@ -32,8 +32,8 @@ Section RB.
   Fixpoint reds (c: Color) (t: RBTree) : bool :=
     match (c, t) with
       | (_, Leaf) => true
-      | (R, Fork R _ _ _) => false
-      | (_, Fork c l _ r) => andb (reds c l) (reds c r)
+      | (R, Node R _ _ _) => false
+      | (_, Node c l _ r) => andb (reds c l) (reds c r)
     end.
 
   Definition isRedSeparate (t: RBTree) :=
@@ -47,24 +47,24 @@ Section RB.
 
   Definition balanceL c l x r :=
     match (c,l,x,r) with
-      | (B, (Fork R (Fork R a x b) y c), z, d) =>
-        Fork R (Fork B a x b) y (Fork B c z d)
-      | (c, a, x, b) => Fork c a x b
+      | (B, (Node R (Node R a x b) y c), z, d) =>
+        Node R (Node B a x b) y (Node B c z d)
+      | (c, a, x, b) => Node c a x b
     end.
 
   Definition balanceR c l x r :=
     match (c,l,x,r) with
-      | (B, (Fork R a x b), y, (Fork R c z d)) =>
-        Fork R (Fork B a x b) y (Fork B c z d)
-      | (k, x, y, (Fork R c z d)) =>
-        Fork k (Fork R x y c) z d
-      | (c, a, x, b) => Fork c a x b
+      | (B, (Node R a x b), y, (Node R c z d)) =>
+        Node R (Node B a x b) y (Node B c z d)
+      | (k, x, y, (Node R c z d)) =>
+        Node k (Node R x y c) z d
+      | (c, a, x, b) => Node c a x b
     end.
 
   Fixpoint ins x t :=
     match t with
-      | Leaf => Fork R Leaf x Leaf
-      | Fork c l y r =>
+      | Leaf => Node R Leaf x Leaf
+      | Node c l y r =>
         match compare x y with
           | LT => balanceL c (ins x l) y r
           | GT => balanceR c l y (ins x r)
@@ -74,27 +74,27 @@ Section RB.
 
   Definition insert a b :=
     match ins a b with
-      | Fork _ d e f =>  Fork B d e f
+      | Node _ d e f =>  Node B d e f
       | Leaf => (* never reached *) Leaf
     end.
 
   Definition isBlackBlack t :=
     match t with
-      | (Fork B (Fork B _ _ _) _ _) => true
-      | (Fork B Leaf _ _)           => true
+      | (Node B (Node B _ _ _) _ _) => true
+      | (Node B Leaf _ _)           => true
       | _                           => false
     end.
   
   Definition isBlackRed t :=
     match t with
-      | (Fork B (Fork R _ _ _) _ _) => true
+      | (Node B (Node R _ _ _) _ _) => true
       | _                           => false
     end.
   
   Definition turnR t :=
     match t with
       | Leaf           => (* not reached *) t
-      | (Fork _ l x r) => Fork R l x r
+      | (Node _ l x r) => Node R l x r
     end.
 
   Require Import Arith.Wf_nat.
@@ -102,7 +102,7 @@ Section RB.
   Fixpoint hight t :=
     match t with
       | Leaf => O
-      | Fork _ l _ _ => S (hight l)
+      | Node _ l _ _ => S (hight l)
     end.
 
   Require Import Recdef.
@@ -112,19 +112,19 @@ Section RB.
 
   Program Fixpoint deleteMin' (t: RBTree) {measure (hight t)}: RBTree :=
     match t with
-      | (Fork R Leaf _ Leaf) => Leaf
-      | (Fork R l x r) =>
+      | (Node R Leaf _ Leaf) => Leaf
+      | (Node R l x r) =>
         match (isBlackBlack l, isBlackRed r) with
           | (true, true) =>
             match r with
-              | Fork B (Fork R b y c) z d => 
-                Fork R (Fork B (deleteMin' (turnR l)) x b) y (Fork B c z d)
+              | Node B (Node R b y c) z d => 
+                Node R (Node B (deleteMin' (turnR l)) x b) y (Node B c z d)
               | _ => t (* not reached *)
             end
           | (true, _)    => balanceR B (deleteMin' (turnR l)) x (turnR r)
           | _            => t (* not reached *)
         end
-      | (Fork c l x r) => Fork c (deleteMin' l) x r
+      | (Node c l x r) => Node c (deleteMin' l) x r
       | _ => t (* not reached *)
     end.
   Next Obligation.
@@ -167,7 +167,7 @@ Section RB.
   Definition turnB t :=
     match t with
       | Leaf           => (* not reached *) t
-      | (Fork _ l x r) => Fork B l x r
+      | (Node _ l x r) => Node B l x r
     end.
 
   Definition deleteMin t :=
@@ -179,8 +179,8 @@ Section RB.
   Fixpoint isLeftLean t :=
     match t with
       | Leaf => true
-      | (Fork B _ _ (Fork R _ _ _)) => false
-      | (Fork _ r _ l) => andb (isLeftLean r) (isLeftLean l)
+      | (Node B _ _ (Node R _ _ _)) => false
+      | (Node _ r _ l) => andb (isLeftLean r) (isLeftLean l)
     end.
 
   Definition valid t :=
@@ -276,8 +276,8 @@ Section RB.
       congruence.
       destruct (compare x a1); try destruct (balanceL B (ins x t2_1) a1 t2_2); try destruct (balanceR B t2_1 a1 (ins x t2_2)); try destruct c; try destruct c0; try congruence.
       destruct c0.
-      destruct (ins x (Fork c t2_1 a1 t2_2)); try destruct c0; try congruence.
-      destruct (ins x (Fork c t2_1 a1 t2_2)); try destruct c0; try congruence.
+      destruct (ins x (Node c t2_1 a1 t2_2)); try destruct c0; try congruence.
+      destruct (ins x (Node c t2_1 a1 t2_2)); try destruct c0; try congruence.
       congruence.
 
       Qed.
