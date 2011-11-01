@@ -138,7 +138,7 @@ Section RB.
 
     simpl.
     auto.
-  Defined.
+  Qed.
   Next Obligation.
     destruct l.
     simpl.
@@ -146,23 +146,23 @@ Section RB.
 
     simpl.
     auto.
-  Defined.
+  Qed.
   Next Obligation.
     intuition.
     inversion H0.
     inversion H0.
-  Defined.
+  Qed.
   Next Obligation.
     intuition.
     congruence.
     congruence.
     congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition.
     congruence.
     congruence.
-  Defined.
+  Qed.
 
   Definition turnB t :=
     match t with
@@ -269,104 +269,104 @@ Section RB.
     end.
   Next Obligation.
     destruct l; simpl; try omega.
-  Defined.
+  Qed.
   Next Obligation.
     destruct l; simpl; omega.
-  Defined.
+  Qed.
   Next Obligation.
     simpl.
     omega.
-  Defined.
+  Qed.
   Next Obligation.
     split; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     split; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     simpl; omega.
-  Defined.
+  Qed.
   Next Obligation.
     destruct r; simpl; omega.
-  Defined.
+  Qed.
   Next Obligation.
     destruct r; simpl; omega.
-  Defined.
+  Qed.
   Next Obligation.
     destruct r; simpl; omega.
-  Defined.
+  Qed.
   Next Obligation.
     split; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     simpl; omega.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   Next Obligation.
     intuition; congruence.
-  Defined.
+  Qed.
   
   Definition delete kx t :=
     match delete' kx (turnR t) with
